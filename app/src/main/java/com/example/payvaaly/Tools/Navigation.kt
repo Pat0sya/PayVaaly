@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.payvaaly.FirstLayer.ProfileCompletionScreen
 import com.example.payvaaly.FirstLayer.SignInScreen
 import com.example.payvaaly.FirstLayer.WelcomeScreen
+import com.example.payvaaly.SecondLayer.MyCards
 import com.example.payvaaly.SecondLayer.Payment
 import com.example.payvaaly.SecondLayer.TitleScreen
 
@@ -51,6 +52,11 @@ fun Navigation() {
         }
         composable("Payment") {
             Payment(
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable("MyCards") {   // <-- ДОБАВЛЕННЫЙ ЭКРАН
+            MyCards(
                 onBackClicked = { navController.popBackStack() }
             )
         }
