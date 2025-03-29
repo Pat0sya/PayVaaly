@@ -2,7 +2,10 @@ package com.example.payvaaly.Tools
 
 
 import SignUpScreen
+import TransactionsScreen
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +20,7 @@ import com.example.payvaaly.SecondLayer.TitleScreen
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
+    val isDarkTheme = remember { mutableStateOf(false) }
 
     NavHost(navController = navController, startDestination = "Welcome") {
         composable("Welcome") {
@@ -45,9 +49,9 @@ fun Navigation() {
         composable("Title") {
             TitleScreen(
                 navController = navController,
-                onSignOut = {
-                    navController.popBackStack("Welcome", inclusive = false)
-                }
+                onSignOut = { navController.popBackStack("Welcome", inclusive = false) },
+                isDarkTheme = isDarkTheme.value,
+                onToggleTheme = { isDarkTheme.value = !isDarkTheme.value }
             )
         }
         composable("Payment") {
@@ -55,13 +59,17 @@ fun Navigation() {
                 onBackClicked = { navController.popBackStack() }
             )
         }
-        composable("MyCards") {   // <-- ДОБАВЛЕННЫЙ ЭКРАН
+        composable("MyCards") {
             MyCards(
                 onBackClicked = { navController.popBackStack() }
             )
         }
+        composable("Transactions") {  // Добавленный экран
+            TransactionsScreen(onBackClicked = { navController.popBackStack() })
+        }
     }
 }
+
 
 
 @Preview(showBackground = true)

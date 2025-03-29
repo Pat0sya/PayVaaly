@@ -21,10 +21,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BottomNavigation
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BottomNavigationItem
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.IconButton
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -33,6 +38,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -45,48 +51,54 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.payvaaly.Tools.SideBar
 import kotlinx.coroutines.launch
 
 @Composable
-fun TitleScreen(navController: NavController, onSignOut: () -> Unit) {
+
+fun TitleScreen(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         scaffoldState = scaffoldState,
-        drawerContent = { SideBar(navController, onSignOut) },
-        bottomBar = { BottomNavigationBar() }
+        drawerContent = { SideBar(navController, onSignOut, isDarkTheme, onToggleTheme) },
+        bottomBar = { BottomNavigationBar(isDarkTheme = isDarkTheme) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF3F4F6))
+                .background(if (isDarkTheme) Color.Black else Color(0xFFF3F4F6))
                 .padding(paddingValues)
         ) {
             TopSection(
                 onMenuClicked = {
                     coroutineScope.launch { scaffoldState.drawerState.open() }
-                }
+                },
+                isDarkTheme = isDarkTheme
             )
-            BalanceCard()
-            CheckBalanceButton()
+            BalanceCard(isDarkTheme)
+            CheckBalanceButton(isDarkTheme)
         }
     }
 }
 
+
 @Composable
-fun TopSection(onMenuClicked: () -> Unit) {
+fun TopSection(onMenuClicked: () -> Unit, isDarkTheme: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF3B82F6), Color(0xFF1E40AF))
+                    colors = if (isDarkTheme) listOf(Color(0xFF1E1E1E), Color(0xFF121212))
+                    else listOf(Color(0xFF3B82F6), Color(0xFF1E40AF))
                 ),
                 shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
             )
@@ -123,19 +135,15 @@ fun TopSection(onMenuClicked: () -> Unit) {
     }
 }
 
-
-
-
-
-
 @Composable
-fun BalanceCard() {
+fun BalanceCard(isDarkTheme: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(24.dp),
-        elevation = 8.dp
+        elevation = 8.dp,
+        backgroundColor = if (isDarkTheme) Color.DarkGray else Color.White
     ) {
         Column(
             modifier = Modifier
@@ -147,11 +155,15 @@ fun BalanceCard() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Ваш баланс", color = Color.Gray, fontSize = 16.sp)
+                Text(
+                    text = "Ваш баланс",
+                    color = if (isDarkTheme) Color.LightGray else Color.Gray,
+                    fontSize = 16.sp
+                )
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = "More options",
-                    tint = Color.Gray,
+                    tint = if (isDarkTheme) Color.LightGray else Color.Gray,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -161,22 +173,22 @@ fun BalanceCard() {
                 color = Color(0xFFF63B3B),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp),
-
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }
 }
 
 @Composable
-fun CheckBalanceButton() {
+fun CheckBalanceButton(isDarkTheme: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF3B82F6), Color(0xFF9333EA))
+                    colors = if (isDarkTheme) listOf(Color(0xFF444444), Color(0xFF222222))
+                    else listOf(Color(0xFF3B82F6), Color(0xFF9333EA))
                 ),
                 shape = RoundedCornerShape(24.dp)
             )
@@ -185,43 +197,41 @@ fun CheckBalanceButton() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp) // Увеличиваем высоту Row
-                .padding(vertical = 16.dp), // Добавляем вертикальные отступы
+                .height(120.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Следите за\nвашем балансем",
+                text = "Следите за\nвашем балансом",
                 color = Color.White,
-                fontSize = 18.sp,
-                 // Добавляем горизонтальные отступы для текста
+                fontSize = 18.sp
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Arrow",
                 tint = Color.White,
-                modifier = Modifier
-                    .size(50.dp)
-                    // Добавляем горизонтальные отступы для иконки
+                modifier = Modifier.size(50.dp)
             )
         }
     }
 }
 
+
 @Composable
-fun BottomNavigationBar() {
-    BottomNavigation(backgroundColor = Color.White) {
+fun BottomNavigationBar(isDarkTheme: Boolean) {
+    val backgroundColor = if (isDarkTheme) Color.Black else Color.White
+    val selectedItemTint = if (isDarkTheme) Color(0xFF3B82F6) else Color(0xFF3B82F6)  // You can adjust the colors for dark theme if necessary
+    val unselectedItemTint = if (isDarkTheme) Color.Gray else Color.Gray
+
+    BottomNavigation(backgroundColor = backgroundColor) {
         BottomNavigationItem(
             icon = {
                 Icon(
                     imageVector = Icons.Filled.ShoppingCart,
                     contentDescription = "Кошелек",
-                    tint = Color(0xFF3B82F6)
-
+                    tint = selectedItemTint
                 )
-
             },
-
             selected = true,
             onClick = {}
         )
@@ -230,10 +240,9 @@ fun BottomNavigationBar() {
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = "Notifications",
-                    tint = Color.Gray
+                    tint = unselectedItemTint
                 )
             },
-
             selected = false,
             onClick = {}
         )
@@ -242,12 +251,21 @@ fun BottomNavigationBar() {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
-                    tint = Color.Gray
+                    tint = unselectedItemTint
                 )
             },
-
             selected = false,
             onClick = {}
         )
     }
+}
+@Preview(showBackground = true)
+@Composable
+fun PreviewNavigation() {
+    TitleScreen(
+        navController = rememberNavController(),
+        onSignOut = {},
+        isDarkTheme = true,
+        onToggleTheme = {}
+    )
 }
