@@ -40,10 +40,11 @@ android {
 }
 
 dependencies {
-    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+
     implementation(libs.skydoves.landscapist.coil)
     implementation(libs.androidx.material.v142)
     implementation(libs.coil.compose)
+    implementation(libs.coil.kt.coil.compose)
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.activity.ktx)
