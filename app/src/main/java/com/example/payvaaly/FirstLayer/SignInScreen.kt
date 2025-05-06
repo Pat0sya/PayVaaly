@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,13 +26,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.payvaaly.R
+import com.example.payvaaly.tools.loginRequest
 import com.example.payvaaly.ui.theme.PrimaryButton
 import com.example.payvaaly.ui.theme.UnderlineTextField
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignInScreen(onBackClicked: () -> Unit, onSignInSuccess: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -100,15 +105,25 @@ fun SignInScreen(onBackClicked: () -> Unit, onSignInSuccess: () -> Unit) {
             // Кнопка "Sign In"
             PrimaryButton(
                 onClick = {
-                    // Логика входа
-                    onSignInSuccess()
+                    coroutineScope.launch {
+                        val result = loginRequest(email, password)
+                        result.onSuccess {
+                            onSignInSuccess()
+                        }.onFailure {
+                            errorMessage = it.message
+                        }
+                    }
                 },
                 text = "Войти"
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = it, color = Color.Red)
+            }
 
-            // Кнопка "Back"
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         }
     }
-}
+

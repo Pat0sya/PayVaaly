@@ -10,7 +10,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.payvaaly.FirstLayer.ProfileCompletionScreen
 import com.example.payvaaly.FirstLayer.SignInScreen
 import com.example.payvaaly.FirstLayer.WelcomeScreen
 import com.example.payvaaly.SecondLayer.MyCards
@@ -38,20 +37,17 @@ fun Navigation() {
         composable("SignUp") {
             SignUpScreen(
                 onBackClicked = { navController.popBackStack() },
-                onNavigateToProfile = { navController.navigate("ProfileCompletion") }
+                onNavigateToProfile = { navController.navigate("Title") }
             )
         }
-        composable("ProfileCompletion") {
-            ProfileCompletionScreen(
-                onComplete = { navController.navigate("Title") }
-            )
-        }
+
         composable("Title") {
             TitleScreen(
                 navController = navController,
                 onSignOut = { navController.popBackStack("Welcome", inclusive = false) },
                 isDarkTheme = isDarkTheme.value,
-                onToggleTheme = { isDarkTheme.value = !isDarkTheme.value }
+                onToggleTheme = { isDarkTheme.value = !isDarkTheme.value
+                }
             )
         }
         composable("Payment") {

@@ -23,13 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import coil3.compose.AsyncImage
 import com.example.payvaaly.R
+
 
 @Composable
 fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
@@ -46,11 +44,7 @@ fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Bo
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = 24.dp)
         ) {
-            AsyncImage(
-                model = "https://storage.googleapis.com/a1aa/image/cgrdgX5RgZslFcx-O1QQ-t6M00PkDJzYnJ_sL508Un4.jpg",
-                contentDescription = "Profile Picture",
 
-            )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text("Emma Watson", fontSize = 18.sp, color = if (isDarkTheme) Color.White else Color.Black)
@@ -102,6 +96,8 @@ fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Bo
     }
 }
 
+
+
 @Composable
 fun SideBarItem(icon: Painter, label: String, isDarkTheme: Boolean, onClick: () -> Unit) {
     Row(
@@ -118,17 +114,4 @@ fun SideBarItem(icon: Painter, label: String, isDarkTheme: Boolean, onClick: () 
         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Arrow", tint = if (isDarkTheme) Color.LightGray else Color(0xFF3B82F6))
     }
 }
-@Preview(showBackground = true)
-@Composable
-fun PreviewSideBar() {
-    // Заглушка для NavController
-    val navController = rememberNavController()
 
-    // Заглушка для onSignOut и onToggleTheme
-    SideBar(
-        navController = navController,
-        onSignOut = { },
-        isDarkTheme = true, // Для светлой темы
-        onToggleTheme = { }
-    )
-}
