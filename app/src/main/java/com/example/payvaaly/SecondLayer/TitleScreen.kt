@@ -129,8 +129,8 @@ fun TopSection(onMenuClicked: () -> Unit, isDarkTheme: Boolean) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Доброе утро,", color = Color.White, fontSize = 18.sp)
-            Text(text = "Фиг", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Доброе утро!", color = Color.White, fontSize = 24.sp)
+
         }
     }
 }
@@ -167,10 +167,10 @@ fun BalanceCard(isDarkTheme: Boolean) {
                     modifier = Modifier.size(24.dp)
                 )
             }
-
+            val value = -5
             Text(
-                text = "Требуется взыскание",
-                color = Color(0xFFF63B3B),
+                text = "$value P",
+                color = if (value < 0) Color(0xFFF63B3B) else Color.Black,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)

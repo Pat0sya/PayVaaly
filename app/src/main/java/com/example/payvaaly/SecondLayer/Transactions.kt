@@ -23,16 +23,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.payvaaly.tools.fetchTransactions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -55,27 +53,26 @@ fun TransactionsScreen(onBackClicked: () -> Unit) {
     val sharedPreferences = remember { context.getSharedPreferences("search_prefs", Context.MODE_PRIVATE) }
     var searchText by remember { mutableStateOf("") }
     var searchHistory by remember { mutableStateOf(loadSearchHistory(sharedPreferences)) }
-    var isSearching by remember { mutableStateOf(false) } // Состояние загрузки
+    var isSearching by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
 
-    val transactions = remember {
-        listOf(
-            TransactionItemData(Icons.Default.ShoppingCart, "Шопинг", "15 March 2021, 8:30 pm", "-$120"),
-            TransactionItemData(Icons.Default.Star, "Медицина", "9 March 2021, 10:00 pm", "-$89.24"),
-            TransactionItemData(Icons.Default.Person, "Спорт", "3 March 2021, 6:57 pm", "-$64.85"),
-            TransactionItemData(Icons.Default.Clear, "Ресторан", "20 March 2021, 7:15 pm", "-$45.50"),
-            TransactionItemData(Icons.Default.Clear, "Такси", "18 March 2021, 5:40 pm", "-$15.75"),
-            TransactionItemData(Icons.Default.Home, "Аренда", "1 March 2021, 12:00 pm", "-$800"),
-            TransactionItemData(Icons.Default.Clear, "Продукты", "5 March 2021, 2:30 pm", "-$220.10"),
-            TransactionItemData(Icons.Default.Clear, "Зарплата", "25 March 2021, 9:00 am", "+$2500"),
-            TransactionItemData(Icons.Default.Clear, "Путешествие", "12 March 2021, 11:45 am", "-$540.60"),
-            TransactionItemData(Icons.Default.Clear, "Кино", "14 March 2021, 9:00 pm", "-$12.50"),
-            TransactionItemData(Icons.Default.Clear, "Мобильная связь", "10 March 2021, 3:20 pm", "-$30"),
-            TransactionItemData(Icons.Default.Clear, "Кофе", "22 March 2021, 8:00 am", "-$5.80"),
-            TransactionItemData(Icons.Default.Clear, "Фитнес", "17 March 2021, 7:30 am", "-$50"),
-            TransactionItemData(Icons.Default.Clear, "Образование", "6 March 2021, 1:00 pm", "-$120.50"),
-            TransactionItemData(Icons.Default.Clear,"Интернет", "8 March 2021, 4:00 pm", "-$25")
-        )
+    var transactions by remember { mutableStateOf<List<TransactionItemData>>(emptyList()) }
+
+    // Загрузка токена или email из SharedPreferences
+    val email = sharedPreferences.getString("user_email", "") ?: ""
+
+    // Загрузка транзакций
+    LaunchedEffect(email) {
+        val fetched = fetchTransactions(email)
+        transactions = fetched.map {
+            TransactionItemData(
+                icon = Icons.Default.Search, // Выбери иконку по желанию
+                title = it.description,
+                date = formatTimestamp(it.timestamp),
+                amount = formatAmount(it.amount)
+            )
+        }
     }
 
     val filteredTransactions = remember(searchText) {
@@ -285,4 +282,16 @@ fun calculateTotal(transactions: List<TransactionItemData>): String {
         amount.toDoubleOrNull() ?: 0.0
     }
     return "%.2f".format(total)
+}
+
+
+
+fun formatAmount(amount: Int): String {
+    return if (amount >= 0) "+$amount" else "-${-amount}"
+}
+
+fun formatTimestamp(timestamp: Long): String {
+    val date = java.util.Date(timestamp)
+    val format = java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+    return format.format(date)
 }

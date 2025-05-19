@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -45,7 +46,8 @@ fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Bo
             modifier = Modifier.padding(bottom = 24.dp)
         ) {
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(40.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Column {
                 Text("Emma Watson", fontSize = 18.sp, color = if (isDarkTheme) Color.White else Color.Black)
                 Text("@emma_watson", fontSize = 14.sp, color = Color.Gray)
@@ -55,18 +57,15 @@ fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Bo
         SideBarItem(painterResource(id = R.drawable.payment_icon), "Оплаты", isDarkTheme = isDarkTheme) {
             navController.navigate("Payment")
         }
+        Spacer(modifier = Modifier.height(20.dp))
         SideBarItem(painterResource(id = R.drawable.transactions_icon), "Транзакции",isDarkTheme = isDarkTheme) {
             navController.navigate("Transactions")
         }
+        Spacer(modifier = Modifier.height(20.dp))
         SideBarItem(painterResource(id = R.drawable.cards_icon), "Карты", isDarkTheme = isDarkTheme ){
             navController.navigate("MyCards")
         }
-        SideBarItem(painterResource(id = R.drawable.promotions_icon), "Акции", isDarkTheme = isDarkTheme) {
-            navController.navigate("Promotions")
-        }
-        SideBarItem(painterResource(id = R.drawable.savings_icon), "Сбережения", isDarkTheme = isDarkTheme) {
-            navController.navigate("Savings")
-        }
+
 
 
         Spacer(modifier = Modifier.weight(1f))

@@ -1,10 +1,14 @@
 package com.example.payvaaly.tools
 
+import android.util.Log
+import com.example.payvaaly.SecondLayer.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -14,7 +18,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 
 val client = HttpClient(CIO) {
     install(ContentNegotiation) {
@@ -92,5 +98,46 @@ suspend fun registrationRequest(
         }
     } catch (e: Exception) {
         Result.failure(e)
+    }
+}
+
+
+@Serializable
+data class TransactionResponse(
+    val id: Int,
+    val userEmail: String,
+    val amount: Int,
+    val description: String,
+    val timestamp: Long
+)
+
+
+suspend fun fetchTransactions(email: String): List<TransactionResponse> {
+    return try {
+        val response = client.get("http://10.0.2.2:8080/transactions") {
+            parameter("email", email)
+        }
+
+        if (response.status == HttpStatusCode.OK) {
+            response.body()
+        } else {
+            Log.e("Transactions", "Error: ${response.status}")
+            emptyList()
+        }
+    } catch (e: Exception) {
+        Log.e("Transactions", "Exception: ${e.message}")
+        emptyList()
+    }
+}
+
+
+
+suspend fun fetchUsersFromApi(): List<User> {
+    val response: HttpResponse = client.get("http://10.0.2.2:8080/users")
+    return if (response.status == HttpStatusCode.OK) {
+        val jsonString = response.bodyAsText()
+        Json.decodeFromString(ListSerializer(serializer<User>()), jsonString)
+    } else {
+        emptyList()
     }
 }

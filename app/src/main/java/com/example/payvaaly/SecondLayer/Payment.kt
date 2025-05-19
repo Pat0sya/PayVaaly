@@ -1,5 +1,7 @@
 package com.example.payvaaly.SecondLayer
 
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,36 +14,56 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import kotlinx.serialization.Serializable
 
+// DTO для пользователя (просто пример)
+@Serializable
+data class User(val email: String, val firstName: String, val secondName: String)
 
 @Composable
-fun Payment(onBackClicked: () -> Unit) {
+fun Payment(
+    onBackClicked: () -> Unit,
+    fetchUsers: suspend () -> List<User>  // функция загрузки пользователей с сервера
+) {
     var amount by remember { mutableStateOf("0") }
+    var users by remember { mutableStateOf(emptyList<User>()) }
+    var expanded by remember { mutableStateOf(false) }
+    var selectedUser by remember { mutableStateOf<User?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // Загружаем пользователей при запуске
+    LaunchedEffect(Unit) {
+        users = fetchUsers()
+        if (users.isNotEmpty()) {
+            selectedUser = users.first()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -49,7 +71,7 @@ fun Payment(onBackClicked: () -> Unit) {
             .background(Color(0xFFF3F4F6))
             .padding(16.dp)
     ) {
-        // Top Bar with Gradient Background
+        // Top Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,9 +102,9 @@ fun Payment(onBackClicked: () -> Unit) {
                     text = "Transfer",
                     color = Color.White,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.size(24.dp)) // Для симметрии
+                Spacer(modifier = Modifier.size(24.dp))
             }
         }
 
@@ -102,42 +124,70 @@ fun Payment(onBackClicked: () -> Unit) {
                 text = "$${amount}",
                 color = Color(0xFF1E40AF),
                 fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
 
-        // Recipient Section
+        // Recipient Dropdown
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(vertical = 16.dp)
         ) {
             Text(
                 text = "To",
                 color = Color.Gray,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
-            Row(
-                modifier = Modifier.padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = "https://storage.googleapis.com/a1aa/image/pD9czX8M9cslMnSOjCBYQhf8JiJLWJC8tReelD1uPWc.jpg",
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Grace Addison",
-                    color = Color.Black,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+
+            Box {
+                // Кнопка выбора пользователя
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (selectedUser != null) {
+
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "${selectedUser!!.firstName} ${selectedUser!!.secondName}",
+                            color = Color.Black,
+                            fontSize = 18.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Text("Select recipient")
+                    }
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.ArrowForward else Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    users.forEach { user ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(text = "${user.firstName} ${user.secondName}")
+                                }
+                            },
+                            onClick = {
+                                selectedUser = user
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
         }
 
@@ -147,6 +197,7 @@ fun Payment(onBackClicked: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 fun NumberPad(onDigitClicked: (String) -> Unit) {

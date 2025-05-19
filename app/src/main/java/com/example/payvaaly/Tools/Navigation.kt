@@ -15,6 +15,7 @@ import com.example.payvaaly.FirstLayer.WelcomeScreen
 import com.example.payvaaly.SecondLayer.MyCards
 import com.example.payvaaly.SecondLayer.Payment
 import com.example.payvaaly.SecondLayer.TitleScreen
+import com.example.payvaaly.tools.fetchUsersFromApi
 
 @Composable
 fun Navigation() {
@@ -52,7 +53,8 @@ fun Navigation() {
         }
         composable("Payment") {
             Payment(
-                onBackClicked = { navController.popBackStack() }
+                onBackClicked = { navController.popBackStack() },
+                fetchUsers = { fetchUsersFromApi() }
             )
         }
         composable("MyCards") {
