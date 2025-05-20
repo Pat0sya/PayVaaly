@@ -26,64 +26,60 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.payvaaly.R
-import com.example.payvaaly.tools.loginRequest
+import com.example.payvaaly.Tools.loginRequest
+import com.example.payvaaly.ui.theme.OutlinedButtonBack
 import com.example.payvaaly.ui.theme.PrimaryButton
 import com.example.payvaaly.ui.theme.UnderlineTextField
 import kotlinx.coroutines.launch
 
 @Composable
-fun SignInScreen(onBackClicked: () -> Unit, onSignInSuccess: () -> Unit) {
+fun SignInScreen(
+    onBackClicked: () -> Unit,
+    onSignInSuccess: (String) -> Unit  // Теперь передаем email при успешном входе
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Фоновое изображение
         Image(
-            painter = painterResource(id = R.drawable.circle), // Укажите ваш ресурс
-            contentDescription = null, // Описание для доступности
-            modifier = Modifier.size(500.dp).padding(bottom = 150.dp).padding(end = 10.dp)// Отступ сверху, чтобы опустить текст
-
-
-             // Масштабирование изображения
+            painter = painterResource(id = R.drawable.circle),
+            contentDescription = null,
+            modifier = Modifier
+                .size(500.dp)
+                .padding(bottom = 150.dp)
+                .padding(end = 10.dp)
         )
         Text(
             text = "Добро \n \nпожаловать",
-            color = Color.White, // Белый цвет текста
+            color = Color.White,
             fontSize = 32.sp,
             fontWeight = FontWeight.Normal,
             modifier = Modifier
-                .padding(top = 120.dp) // Отступ сверху, чтобы опустить текст
-                .padding(start = 30.dp) // Позиция по центру в верхней части
+                .padding(top = 120.dp)
+                .padding(start = 30.dp)
         )
 
-        // Основной контент
         Column(
             modifier = Modifier
                 .fillMaxSize()
-
-                .padding(start = 30.dp)
-                .padding(end = 30.dp)
-                .padding(top = 150.dp),
+                .padding(start = 30.dp, end = 30.dp, top = 150.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Текст "Sign in"
             Text(
                 text = "Вход",
-                color = Color.Black, // Белый цвет текста для лучшей видимости
+                color = Color.Black,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .align(Alignment.Start) // Выравнивание по левому краю
-                    .padding(bottom = 16.dp) // Отступ снизу
+                    .align(Alignment.Start)
+                    .padding(bottom = 16.dp)
             )
 
-            // Поле для ввода email
             UnderlineTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -92,7 +88,6 @@ fun SignInScreen(onBackClicked: () -> Unit, onSignInSuccess: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Поле для ввода пароля
             UnderlineTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -102,13 +97,12 @@ fun SignInScreen(onBackClicked: () -> Unit, onSignInSuccess: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Кнопка "Sign In"
             PrimaryButton(
                 onClick = {
                     coroutineScope.launch {
                         val result = loginRequest(email, password)
                         result.onSuccess {
-                            onSignInSuccess()
+                            onSignInSuccess(email)  // передаем email обратно при успехе
                         }.onFailure {
                             errorMessage = it.message
                         }
@@ -122,8 +116,13 @@ fun SignInScreen(onBackClicked: () -> Unit, onSignInSuccess: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-        }
-
+            OutlinedButtonBack(
+                onClick = onBackClicked,
+                text = "Назад",
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
+}
+
 

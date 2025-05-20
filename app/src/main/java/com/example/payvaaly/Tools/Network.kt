@@ -1,4 +1,4 @@
-package com.example.payvaaly.tools
+package com.example.payvaaly.Tools
 
 import android.util.Log
 import com.example.payvaaly.SecondLayer.User
@@ -141,3 +141,43 @@ suspend fun fetchUsersFromApi(): List<User> {
         emptyList()
     }
 }
+suspend fun fetchUserByEmail(email: String): User? {
+    return try {
+        val response = client.get("http://10.0.2.2:8080/user") {
+            parameter("email", email)
+        }
+
+        if (response.status == HttpStatusCode.OK) {
+            response.body()
+        } else {
+            Log.e("fetchUserByEmail", "Error: ${response.status}")
+            null
+        }
+    } catch (e: Exception) {
+        Log.e("fetchUserByEmail", "Exception: ${e.message}")
+        null
+    }
+}
+suspend fun fetchBalanceForUser(email: String): Double? {
+    if (email.isBlank()) return null
+
+    return try {
+        val response = client.get("http://10.0.2.2:8080/balance") {
+            parameter("email", email)
+        }
+
+        if (response.status == HttpStatusCode.OK) {
+            val balanceResponse = response.body<BalanceResponse>()
+            balanceResponse.balance
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+@Serializable
+data class BalanceResponse(
+    val balance: Double
+)

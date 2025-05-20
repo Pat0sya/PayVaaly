@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -77,6 +78,38 @@ fun PrimaryButton(
 }
 
 // Outlined button style (white background, light blue outline, light blue text)
+@Composable
+fun OutlinedButtonBack(
+    onClick: () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .height(60.dp) // Fixed height
+            .widthIn(min = 250.dp), // Minimum width
+        shape = RoundedCornerShape(20.dp), // Boxy shape
+        border = BorderStroke(2.dp, LightBlue), // Light blue outline
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White, // White background
+            contentColor = LightBlue // Light blue text
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = text)
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Arrow",
+                tint = LightBlue
+            )
+        }
+    }
+}
 @Composable
 fun OutlinedButton(
     onClick: () -> Unit,

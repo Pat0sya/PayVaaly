@@ -48,10 +48,7 @@ fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Bo
 
             Spacer(modifier = Modifier.width(40.dp))
             Spacer(modifier = Modifier.height(20.dp))
-            Column {
-                Text("Emma Watson", fontSize = 18.sp, color = if (isDarkTheme) Color.White else Color.Black)
-                Text("@emma_watson", fontSize = 14.sp, color = Color.Gray)
-            }
+
         }
 
         SideBarItem(painterResource(id = R.drawable.payment_icon), "Оплаты", isDarkTheme = isDarkTheme) {

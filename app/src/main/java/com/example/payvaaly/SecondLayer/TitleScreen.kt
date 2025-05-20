@@ -8,6 +8,15 @@ package com.example.payvaaly.SecondLayer
 //noinspection UsingMaterialAndMaterial3Libraries
 
 //noinspection UsingMaterialAndMaterial3Libraries
+import android.util.Log//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,15 +30,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BottomNavigation
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.BottomNavigationItem
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.IconButton
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -38,12 +42,16 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,20 +59,37 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.payvaaly.Tools.SideBar
+import com.example.payvaaly.Tools.fetchBalanceForUser
 import kotlinx.coroutines.launch
 
-@Composable
 
-fun TitleScreen(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
+@Composable
+fun TitleScreen(
+    navController: NavController,
+    onSignOut: () -> Unit,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    email: String // Добавляем email, чтобы получить баланс именно этого пользователя
+) {
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
+
+    // Состояние для хранения баланса пользователя
+    var balance by remember { mutableStateOf<Double?>(null) }
+
+    LaunchedEffect(email) {
+        Log.d("BALANCE_DEBUG", "Email = $email")
+        if (email.isNotBlank()) {
+            coroutineScope.launch {
+                balance = fetchBalanceForUser(email)
+            }
+        }
+    }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -83,11 +108,12 @@ fun TitleScreen(navController: NavController, onSignOut: () -> Unit, isDarkTheme
                 },
                 isDarkTheme = isDarkTheme
             )
-            BalanceCard(isDarkTheme)
+            BalanceCard(isDarkTheme, balance)
             CheckBalanceButton(isDarkTheme)
         }
     }
 }
+
 
 
 @Composable
@@ -136,7 +162,7 @@ fun TopSection(onMenuClicked: () -> Unit, isDarkTheme: Boolean) {
 }
 
 @Composable
-fun BalanceCard(isDarkTheme: Boolean) {
+fun BalanceCard(isDarkTheme: Boolean, balance: Double?) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,10 +193,9 @@ fun BalanceCard(isDarkTheme: Boolean) {
                     modifier = Modifier.size(24.dp)
                 )
             }
-            val value = -5
             Text(
-                text = "$value P",
-                color = if (value < 0) Color(0xFFF63B3B) else Color.Black,
+                text = if (balance != null) "$balance ₽" else "Загрузка...",
+                color = if (balance != null && balance < 0) Color(0xFFF63B3B) else Color.Black,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
@@ -258,14 +283,4 @@ fun BottomNavigationBar(isDarkTheme: Boolean) {
             onClick = {}
         )
     }
-}
-@Preview(showBackground = true)
-@Composable
-fun PreviewNavigation() {
-    TitleScreen(
-        navController = rememberNavController(),
-        onSignOut = {},
-        isDarkTheme = true,
-        onToggleTheme = {}
-    )
 }

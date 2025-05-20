@@ -26,7 +26,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.payvaaly.R
-import com.example.payvaaly.tools.registrationRequest
+import com.example.payvaaly.Tools.registrationRequest
+import com.example.payvaaly.ui.theme.OutlinedButtonBack
 import com.example.payvaaly.ui.theme.PrimaryButton
 import com.example.payvaaly.ui.theme.UnderlineTextField
 import kotlinx.coroutines.launch
@@ -36,7 +37,7 @@ import kotlinx.coroutines.launch
 
 fun SignUpScreen(
     onBackClicked: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: (String) -> Unit  // теперь принимает email
 ) {
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
@@ -64,7 +65,7 @@ fun SignUpScreen(
         ) {
             Text(
                 text = "Регистрация",
-                color = Color.Black,
+                color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -118,7 +119,7 @@ fun SignUpScreen(
                         )
                         if (result.isSuccess) {
                             message = ""
-                            onNavigateToProfile()
+                            onNavigateToProfile(email.text)  // передаем email
                         } else {
                             message = result.exceptionOrNull()?.message ?: "Ошибка"
                         }
@@ -131,6 +132,12 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(text = message, color = Color.Red)
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedButtonBack(
+                onClick = onBackClicked,
+                text = "Назад",
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }
