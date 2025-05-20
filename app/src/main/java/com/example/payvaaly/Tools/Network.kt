@@ -16,6 +16,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -183,25 +184,32 @@ data class BalanceResponse(
 )
 
 @Serializable
+
 data class TransactionRequest(
-    val recipientEmail: String,
-    val amount: Double
+    val userEmail: String,
+    val amount: Int,
+    val description: String,
+
+    val timestamp: Long
 )
 
 
 
-suspend fun performTransaction(
-    recipientEmail: String,
-    amount: Double
-): Boolean {
-    return try {
-        val body = TransactionRequest(recipientEmail, amount)
-        val response = client.post("http://10.0.2.2:8080/transaction") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
-        response.status == HttpStatusCode.OK
-    } catch (e: Exception) {
-        false
+
+suspend fun performTransaction(recipientEmail: String, amountDouble: Double): Boolean {
+    val amountInt = (amountDouble * 100).toInt()  // конвертация в копейки
+
+    val request = TransactionRequest(
+        userEmail = recipientEmail,
+        amount = amountInt,
+        description = "Transfer",
+        timestamp = System.currentTimeMillis()
+    )
+
+    val response = client.post("http://10.0.2.2:8080/transaction") {
+        contentType(ContentType.Application.Json)
+        setBody(request)
     }
+
+    return response.status.isSuccess()
 }
