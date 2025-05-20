@@ -19,10 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -65,37 +62,8 @@ fun MyCards(onBackClicked: () -> Unit) {
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
-        val newCards = listOf(
-            CardData(
-                amount = "$4500.00",
-                title = "Компания",
-                date = "01/2020",
-                cardNumber = "**** **** **** 2134",
-                imageUrl = fetchRandomImageUrl()
-            ),
-            CardData(
-                amount = "$4000.00",
-                title = "Дом",
-                date = "01/2020",
-                cardNumber = "**** **** **** 2134",
-                imageUrl = fetchRandomImageUrl()
-            ),
-            CardData(
-                amount = "$10.00",
-                title = "Cemья",
-                date = "01/2020",
-                cardNumber = "**** **** **** 2134",
-                imageUrl = fetchRandomImageUrl()
-            ),
-            CardData(
-                amount = "$0.00",
-                title = "Запаска",
-                date = "01/2020",
-                cardNumber = "**** **** **** 2134",
-                imageUrl = fetchRandomImageUrl()
-            ),
-        )
-        cards = newCards
+
+
     }
 
     val filteredCards = cards.filter { it.title.contains(searchQuery, ignoreCase = true) }
@@ -213,15 +181,9 @@ fun RecentTransactionsSection() {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        val transactions = listOf(
-            TransactionItemData(Icons.Default.ShoppingCart, "Шопинг", "15 March 2021, 8:30 pm", "-$120"),
-            TransactionItemData(Icons.Default.Star, "Медецина", "9 March 2021, 10:00 pm", "-$89.24"),
-            TransactionItemData(Icons.Default.Person, "Спорт", "3 March 2021, 6:57 pm", "-$64.85")
-        )
 
-        transactions.forEach { transaction ->
-            TransactionItem(transaction)
-        }
+
+
     }
 }
 

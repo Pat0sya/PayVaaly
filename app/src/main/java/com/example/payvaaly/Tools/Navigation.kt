@@ -66,9 +66,13 @@ fun Navigation() {
 
         // Остальные экраны
         composable("Payment") {
+
             Payment(
                 onBackClicked = { navController.popBackStack() },
-                fetchUsers = { fetchUsersFromApi() }
+                fetchUsers = { fetchUsersFromApi() },
+                performTransaction = { recipientEmail, amount ->
+                    performTransaction(recipientEmail, amount)
+                }
             )
         }
         composable("MyCards") {

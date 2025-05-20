@@ -181,3 +181,27 @@ suspend fun fetchBalanceForUser(email: String): Double? {
 data class BalanceResponse(
     val balance: Double
 )
+
+@Serializable
+data class TransactionRequest(
+    val recipientEmail: String,
+    val amount: Double
+)
+
+
+
+suspend fun performTransaction(
+    recipientEmail: String,
+    amount: Double
+): Boolean {
+    return try {
+        val body = TransactionRequest(recipientEmail, amount)
+        val response = client.post("http://10.0.2.2:8080/transaction") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+        response.status == HttpStatusCode.OK
+    } catch (e: Exception) {
+        false
+    }
+}
