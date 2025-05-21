@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -138,6 +139,42 @@ fun OutlinedButton(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "Arrow",
                 tint = LightBlue
+            )
+        }
+    }
+}
+
+@Composable
+fun TopUpButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(60.dp)
+            .widthIn(min = 20.dp)
+            .background(
+                brush = Brush.horizontalGradient(colors = GradientColors),
+                shape = RoundedCornerShape(20.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(2.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.White
+            ),
+            elevation = ButtonDefaults.buttonElevation(0.dp)
+        ) {
+            Text(
+                text = "Пополнить",
+                modifier = Modifier.align(Alignment.CenterVertically),
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }

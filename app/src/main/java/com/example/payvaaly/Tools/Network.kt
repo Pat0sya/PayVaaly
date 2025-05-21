@@ -1,7 +1,6 @@
 package com.example.payvaaly.Tools
 
 import android.util.Log
-import com.example.payvaaly.SecondLayer.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -21,7 +20,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 
 val client = HttpClient(CIO) {
     install(ContentNegotiation) {
@@ -103,113 +101,136 @@ suspend fun registrationRequest(
 }
 
 
-@Serializable
-data class TransactionResponse(
-    val id: Int,
-    val userEmail: String,
-    val amount: Int,
-    val description: String,
-    val timestamp: Long
-)
+    @Serializable
+    data class TransactionResponse(
+        val senderEmail: String,
+        val recipientEmail: String,
+        val amount: Int,
+        val description: String,
+        val timestamp: Long
+    )
 
 
 suspend fun fetchTransactions(email: String): List<TransactionResponse> {
+    // <--- МЕСТО №1: Проверить значение 'email' ЗДЕСЬ
+    Log.d("fetchTransactions", "Вызов fetchTransactions с email: '$email'")
+
+    // Добавим явную проверку ПЕРЕД отправкой запроса:
+    if (email.isBlank()) {
+        Log.e("fetchTransactions", "ОШИБКА КЛИЕНТА: email пустой ПЕРЕД отправкой запроса на сервер! Запрос не будет выполнен.")
+        return emptyList() // Возвращаем пустой список, не делая запрос
+    }
+
     return try {
         val response = client.get("http://10.0.2.2:8080/transactions") {
-            parameter("email", email)
+            parameter("email", email) // <--- 'email' используется здесь для отправки на сервер
         }
 
-        if (response.status == HttpStatusCode.OK) {
-            response.body()
-        } else {
-            Log.e("Transactions", "Error: ${response.status}")
-            emptyList()
+        // Если сервер вернул статус, отличный от OK
+        if (response.status != HttpStatusCode.OK) {
+            // Сюда мы попадаем, если сервер ответил ошибкой.
+            // В твоем случае response.status здесь равен HttpStatusCode.BadRequest (400)
+            Log.e("fetchTransactions", "Сервер ответил ошибкой: ${response.status}") // Этот лог ты и видишь
+            return emptyList() // Возвращаем пустой список
         }
-    } catch (e: Exception) {
-        Log.e("Transactions", "Exception: ${e.message}")
+
+        // Если сервер вернул HttpStatusCode.OK (200)
+        val bodyText = response.bodyAsText()
+        Log.d("fetchTransactions", "Response body: $bodyText")
+        Json.decodeFromString(ListSerializer(TransactionResponse.serializer()), bodyText)
+
+    } catch (e: Exception) { // Если произошла ошибка сети или другая проблема при выполнении запроса
+        Log.e("fetchTransactions", "Исключение при выполнении запроса: ${e.message}", e) // Добавил 'e' для полного стектрейса
         emptyList()
     }
 }
 
 
-
-suspend fun fetchUsersFromApi(): List<User> {
-    val response: HttpResponse = client.get("http://10.0.2.2:8080/users")
-    return if (response.status == HttpStatusCode.OK) {
-        val jsonString = response.bodyAsText()
-        Json.decodeFromString(ListSerializer(serializer<User>()), jsonString)
-    } else {
-        emptyList()
-    }
-}
-suspend fun fetchUserByEmail(email: String): User? {
-    return try {
-        val response = client.get("http://10.0.2.2:8080/user") {
-            parameter("email", email)
-        }
-
-        if (response.status == HttpStatusCode.OK) {
-            response.body()
-        } else {
-            Log.e("fetchUserByEmail", "Error: ${response.status}")
-            null
-        }
-    } catch (e: Exception) {
-        Log.e("fetchUserByEmail", "Exception: ${e.message}")
-        null
-    }
-}
 suspend fun fetchBalanceForUser(email: String): Double? {
-    if (email.isBlank()) return null
+    if (email.isBlank()) {
+        Log.e("fetchBalanceForUser", "Email is blank, aborting request")
+        return null
+    }
 
     return try {
+        Log.d("fetchBalanceForUser", "Sending request for balance with email: $email")
+
         val response = client.get("http://10.0.2.2:8080/balance") {
             parameter("email", email)
         }
 
+        Log.d("fetchBalanceForUser", "Received response with status: ${response.status}")
+
         if (response.status == HttpStatusCode.OK) {
             val balanceResponse = response.body<BalanceResponse>()
+            Log.d("fetchBalanceForUser", "Parsed balance: ${balanceResponse.balance}")
             balanceResponse.balance
         } else {
+            val errorBody = response.bodyAsText()
+            Log.e("fetchBalanceForUser", "Error response: ${response.status}, body: $errorBody")
             null
         }
+
     } catch (e: Exception) {
+        Log.e("fetchBalanceForUser", "Exception during balance fetch: ${e.message}", e)
         null
     }
 }
 
-@Serializable
-data class BalanceResponse(
-    val balance: Double
-)
-
-@Serializable
-
-data class TransactionRequest(
-    val userEmail: String,
-    val amount: Int,
-    val description: String,
-
-    val timestamp: Long
-)
-
-
-
-
-suspend fun performTransaction(recipientEmail: String, amountDouble: Double): Boolean {
-    val amountInt = (amountDouble * 100).toInt()  // конвертация в копейки
-
-    val request = TransactionRequest(
-        userEmail = recipientEmail,
-        amount = amountInt,
-        description = "Transfer",
-        timestamp = System.currentTimeMillis()
+    @Serializable
+    data class BalanceResponse(
+        val balance: Double
     )
 
-    val response = client.post("http://10.0.2.2:8080/transaction") {
-        contentType(ContentType.Application.Json)
-        setBody(request)
-    }
 
-    return response.status.isSuccess()
+
+
+
+suspend fun performTransaction(senderEmail: String, recipientEmail: String, amountRubles: Double): Boolean {
+    return try {
+        val amountInCents = (amountRubles * 100).toInt()
+        val transactionDTO = TransactionRequest(
+            senderEmail = senderEmail,
+            recipientEmail = recipientEmail,
+            amount = amountInCents,
+            description = "Payment",
+            timestamp = System.currentTimeMillis()
+        )
+        val response = client.post("http://10.0.2.2:8080/transaction") {
+            contentType(ContentType.Application.Json)
+            setBody(transactionDTO)
+        }
+        response.status == HttpStatusCode.Created
+    } catch (e: Exception) {
+        Log.e("Transaction", "Failed to send transaction: ${e.message}")
+        false
+    }
 }
+
+
+    suspend fun topUpBalance(email: String, amount: Double): Boolean {
+        val response = client.post("http://10.0.2.2:8080/topup") {
+            contentType(ContentType.Application.Json)
+            setBody(TopUpDTO(email, amount))
+        }
+        return response.status.isSuccess()
+    }
+    @Serializable
+    data class TopUpDTO(
+        val email: String,
+        val amount: Double
+    )
+    data class UserDTO(
+        val email: String,
+        val firstName: String,
+        val secondName: String
+    )
+
+    @Serializable
+    data class TransactionRequest(
+        val senderEmail: String,
+        val recipientEmail: String,
+        val amount: Int,
+        val description: String,
+        val timestamp: Long
+    )

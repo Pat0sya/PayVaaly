@@ -15,8 +15,9 @@ import androidx.navigation.navArgument
 import com.example.payvaaly.FirstLayer.SignInScreen
 import com.example.payvaaly.FirstLayer.WelcomeScreen
 import com.example.payvaaly.SecondLayer.MyCards
-import com.example.payvaaly.SecondLayer.Payment
+import com.example.payvaaly.SecondLayer.PaymentScreen
 import com.example.payvaaly.SecondLayer.TitleScreen
+import com.example.payvaaly.ThirdLayer.ContactScreen
 
 @Composable
 fun Navigation() {
@@ -65,13 +66,18 @@ fun Navigation() {
         }
 
         // Остальные экраны
-        composable("Payment") {
+        composable("Payment/{ownerEmail}") { backStackEntry ->
+            val ownerEmail = backStackEntry.arguments?.getString("ownerEmail") ?: ""
 
-            Payment(
+            PaymentScreen(
+                ownerEmail = ownerEmail,
                 onBackClicked = { navController.popBackStack() },
-                fetchUsers = { fetchUsersFromApi() },
                 performTransaction = { recipientEmail, amount ->
-                    performTransaction(recipientEmail, amount)
+                    performTransaction(
+                        senderEmail = ownerEmail,
+                        recipientEmail = recipientEmail,
+                        amountRubles = amount
+                    )
                 }
             )
         }
@@ -80,8 +86,26 @@ fun Navigation() {
                 onBackClicked = { navController.popBackStack() }
             )
         }
-        composable("Transactions") {
-            TransactionsScreen(onBackClicked = { navController.popBackStack() })
+        composable(
+            "Transactions?email={email}",
+            arguments = listOf(navArgument("email") { defaultValue = "" })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            TransactionsScreen(
+                email = email,
+                onBackClicked = { navController.popBackStack() }
+            )
+        }
+        composable(
+            "contacts?ownerEmail={ownerEmail}",
+            arguments = listOf(navArgument("ownerEmail") { defaultValue = "" })
+        ) { backStackEntry ->
+            val ownerEmail = backStackEntry.arguments?.getString("ownerEmail") ?: ""
+            ContactScreen(
+                ownerEmail = ownerEmail,
+                navController = navController,
+                isDarkTheme = isDarkTheme.value
+            )
         }
     }
 }

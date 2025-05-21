@@ -1,22 +1,7 @@
 package com.example.payvaaly.SecondLayer
 
-//noinspection UsingMaterialAndMaterial3Libraries
-
-
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-
-//noinspection UsingMaterialAndMaterial3Libraries
-import android.util.Log//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-
-
-
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,20 +13,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -54,17 +38,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.payvaaly.Tools.SideBar
 import com.example.payvaaly.Tools.fetchBalanceForUser
+import com.example.payvaaly.Tools.topUpBalance
+import com.example.payvaaly.ui.theme.TopUpButton
 import kotlinx.coroutines.launch
 
 
@@ -93,8 +78,12 @@ fun TitleScreen(
 
     Scaffold(
         scaffoldState = scaffoldState,
-        drawerContent = { SideBar(navController, onSignOut, isDarkTheme, onToggleTheme) },
-        bottomBar = { BottomNavigationBar(isDarkTheme = isDarkTheme) }
+        drawerContent = { SideBar(navController, onSignOut, isDarkTheme, onToggleTheme,  email) },
+        bottomBar = { BottomNavigationBar(
+            isDarkTheme = isDarkTheme,
+            navController = navController,
+            ownerEmail = email
+        ) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -106,10 +95,44 @@ fun TitleScreen(
                 onMenuClicked = {
                     coroutineScope.launch { scaffoldState.drawerState.open() }
                 },
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDarkTheme,
+                email = email
             )
             BalanceCard(isDarkTheme, balance)
-            CheckBalanceButton(isDarkTheme)
+            var topUpAmount by remember { mutableStateOf("") }
+            val context = LocalContext.current
+
+            Column(Modifier.padding(horizontal = 16.dp)) {
+                OutlinedTextField(
+                    value = topUpAmount,
+                    onValueChange = { topUpAmount = it },
+                    label = { Text("Сумма пополнения") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                TopUpButton(
+                    onClick = {
+                        val amount = topUpAmount.toDoubleOrNull()
+                        if (amount != null && amount > 0) {
+                            coroutineScope.launch {
+                                val success = topUpBalance(email, amount)
+                                if (success) {
+                                    Toast.makeText(context, "Пополнено!", Toast.LENGTH_SHORT).show()
+                                    balance = fetchBalanceForUser(email)
+                                    topUpAmount = ""
+                                } else {
+                                    Toast.makeText(context, "Ошибка пополнения", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } else {
+                            Toast.makeText(context, "Введите корректную сумму", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
         }
     }
 }
@@ -117,14 +140,16 @@ fun TitleScreen(
 
 
 @Composable
-fun TopSection(onMenuClicked: () -> Unit, isDarkTheme: Boolean) {
+fun TopSection(onMenuClicked: () -> Unit, isDarkTheme: Boolean, email: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = if (isDarkTheme) listOf(Color(0xFF1E1E1E), Color(0xFF121212))
-                    else listOf(Color(0xFF3B82F6), Color(0xFF1E40AF))
+                    colors = if (isDarkTheme)
+                        listOf(Color(0xFF1E1E1E), Color(0xFF121212))
+                    else
+                        listOf(Color(0xFF3B82F6), Color(0xFF1E40AF))
                 ),
                 shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
             )
@@ -144,22 +169,28 @@ fun TopSection(onMenuClicked: () -> Unit, isDarkTheme: Boolean) {
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                AsyncImage(
-                    model = "https://storage.googleapis.com/a1aa/image/cgrdgX5RgZslFcx-O1QQ-t6M00PkDJzYnJ_sL508Un4.jpg",
-                    contentDescription = "User profile picture",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.Center // Центрируем текст
+            ) {
+                Text(
+                    text = "Доброе утро!",
+                    color = Color.White,
+                    fontSize = 24.sp
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Доброе утро!", color = Color.White, fontSize = 24.sp)
-
         }
     }
 }
+
 
 @Composable
 fun BalanceCard(isDarkTheme: Boolean, balance: Double?) {
@@ -204,83 +235,80 @@ fun BalanceCard(isDarkTheme: Boolean, balance: Double?) {
     }
 }
 
-@Composable
-fun CheckBalanceButton(isDarkTheme: Boolean) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = if (isDarkTheme) listOf(Color(0xFF444444), Color(0xFF222222))
-                    else listOf(Color(0xFF3B82F6), Color(0xFF9333EA))
-                ),
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Следите за\nвашем балансом",
-                color = Color.White,
-                fontSize = 18.sp
-            )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Arrow",
-                tint = Color.White,
-                modifier = Modifier.size(50.dp)
-            )
-        }
-    }
-}
+
 
 
 @Composable
-fun BottomNavigationBar(isDarkTheme: Boolean) {
+fun BottomNavigationBar(
+    isDarkTheme: Boolean,
+    navController: NavController,
+    ownerEmail: String
+) {
     val backgroundColor = if (isDarkTheme) Color.Black else Color.White
-    val selectedItemTint = if (isDarkTheme) Color(0xFF3B82F6) else Color(0xFF3B82F6)  // You can adjust the colors for dark theme if necessary
-    val unselectedItemTint = if (isDarkTheme) Color.Gray else Color.Gray
+    val selectedItemTint = Color(0xFF3B82F6)
+    val unselectedItemTint = Color.Gray
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route ?: ""
 
     BottomNavigation(backgroundColor = backgroundColor) {
+        // Кошелек (TitleScreen)
         BottomNavigationItem(
             icon = {
                 Icon(
-                    imageVector = Icons.Filled.ShoppingCart,
+                    imageVector = Icons.Filled.Home,
                     contentDescription = "Кошелек",
-                    tint = selectedItemTint
+                    tint = if (currentRoute.startsWith("Title")) selectedItemTint else unselectedItemTint
                 )
             },
-            selected = true,
-            onClick = {}
+            selected = currentRoute.startsWith("Title"),
+            onClick = {
+                navController.navigate("Title?email=$ownerEmail") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                }
+            }
         )
+
+        // Контакты (ContactScreen)
         BottomNavigationItem(
             icon = {
                 Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    tint = unselectedItemTint
+                    imageVector = Icons.Default.AccountBox,
+                    contentDescription = "Контакты",
+                    tint = if (currentRoute.startsWith("contacts")) selectedItemTint else unselectedItemTint
                 )
             },
-            selected = false,
-            onClick = {}
+            selected = currentRoute.startsWith("contacts"),
+            onClick = {
+                navController.navigate("contacts?ownerEmail=$ownerEmail") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                }
+            }
         )
+
+        // Профиль (в будущем)
         BottomNavigationItem(
             icon = {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = unselectedItemTint
+                    contentDescription = "Профиль",
+                    tint = if (currentRoute == "profile") selectedItemTint else unselectedItemTint
                 )
             },
-            selected = false,
-            onClick = {}
+            selected = currentRoute == "profile",
+            onClick = {
+                navController.navigate("profile") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                }
+            }
         )
     }
 }
+
+
