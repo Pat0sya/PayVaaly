@@ -296,12 +296,12 @@ fun BottomNavigationBar(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Профиль",
-                    tint = if (currentRoute == "profile") selectedItemTint else unselectedItemTint
+                    tint = if (currentRoute == "Profile?email={email}") selectedItemTint else unselectedItemTint
                 )
             },
-            selected = currentRoute == "profile",
+            selected = currentRoute == "Profile?email={email}",
             onClick = {
-                navController.navigate("profile") {
+                navController.navigate("Profile?email={email}") {
                     launchSingleTop = true
                     restoreState = true
                     popUpTo(navController.graph.startDestinationId) { saveState = true }

@@ -220,6 +220,7 @@ suspend fun performTransaction(senderEmail: String, recipientEmail: String, amou
         val email: String,
         val amount: Double
     )
+    @Serializable
     data class UserDTO(
         val email: String,
         val firstName: String,

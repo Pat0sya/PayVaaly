@@ -96,6 +96,29 @@ fun Navigation() {
                 onBackClicked = { navController.popBackStack() }
             )
         }
+//        composable(
+//            "Profile?email={email}",
+//            arguments = listOf(navArgument("email") {
+//                type = NavType.StringType
+//                defaultValue = ""
+//                nullable = false
+//            })
+//        ) { backStackEntry ->
+//            val email = backStackEntry.arguments?.getString("email") ?: ""
+//            Log.d("BALANCE_DEBUG", "Email = $email")
+//
+//            ProfileScreen(
+//                navController = navController,
+//                email = email,
+//                firstNameInit = firstNameInit,
+//                secondNameInit = secondNameInit,
+//                onSave = { firstName, secondName ->
+//                    // Реализация сохранения, запрос к серверу или локально
+//                    true
+//                },
+//                onBackClicked = { navController.popBackStack() }
+//            )
+//        }
         composable(
             "contacts?ownerEmail={ownerEmail}",
             arguments = listOf(navArgument("ownerEmail") { defaultValue = "" })
