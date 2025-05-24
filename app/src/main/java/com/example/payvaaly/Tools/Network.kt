@@ -235,3 +235,59 @@ suspend fun performTransaction(senderEmail: String, recipientEmail: String, amou
         val description: String,
         val timestamp: Long
     )
+@Serializable
+data class UserProfileDetails(
+    val firstName: String,
+    val secondName: String
+
+)
+
+suspend fun fetchUserProfileDetails(email: String): UserProfileDetails? {
+    if (email.isBlank() || email == "{email}") {
+        Log.e("UserProfile", "fetchUserProfileDetails: Некорректный или пустой email: $email")
+        return null
+    }
+    Log.d("UserProfile", "Запрос данных профиля для email: $email")
+    return try {
+        val response = client.get("http://10.0.2.2:8080/user/profile") { // Обращаемся к новому эндпоинту
+            parameter("email", email)
+        }
+        if (response.status.isSuccess()) {
+            response.body<UserProfileDetails>() // Ожидаем UserProfileDetails
+        } else {
+            Log.e("UserProfile", "Ошибка сервера при загрузке профиля: ${response.status}, тело: ${response.body<String>()}")
+            null
+        }
+    } catch (e: Exception) {
+        Log.e("UserProfile", "Исключение при загрузке профиля: ${e.message}", e)
+        null
+    }
+}
+
+// Также на клиенте нужна будет функция для сохранения (для onSave)
+suspend fun updateUserProfileOnServer(email: String, firstName: String, secondName: String): Boolean {
+    Log.d("UserProfile", "Отправка обновления профиля для $email: $firstName, $secondName")
+    return try {
+        val requestData = UserProfileUpdateRequest(email, firstName, secondName) // Используем DTO для запроса
+        val response = client.post("http://10.0.2.2:8080/user/profile/update") { // Обращаемся к эндпоинту обновления
+            contentType(ContentType.Application.Json)
+            setBody(requestData)
+        }
+        if (response.status.isSuccess()) {
+            Log.d("UserProfile", "Профиль успешно обновлен на сервере")
+            true
+        } else {
+            Log.e("UserProfile", "Ошибка сервера при обновлении профиля: ${response.status}, тело: ${response.body<String>()}")
+            false
+        }
+    } catch (e: Exception) {
+        Log.e("UserProfile", "Исключение при обновлении профиля: ${e.message}", e)
+        false
+    }
+}
+@Serializable
+data class UserProfileUpdateRequest(
+    val email: String, // Чтобы знать, какого пользователя обновлять
+    val firstName: String,
+    val secondName: String
+)

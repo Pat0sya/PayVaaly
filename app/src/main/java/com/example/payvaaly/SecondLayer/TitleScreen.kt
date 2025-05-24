@@ -51,6 +51,7 @@ import com.example.payvaaly.Tools.fetchBalanceForUser
 import com.example.payvaaly.Tools.topUpBalance
 import com.example.payvaaly.ui.theme.TopUpButton
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
 
 
 @Composable
@@ -290,21 +291,31 @@ fun BottomNavigationBar(
             }
         )
 
+
         // Профиль (в будущем)
         BottomNavigationItem(
             icon = {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Профиль",
-                    tint = if (currentRoute == "Profile?email={email}") selectedItemTint else unselectedItemTint
+                    // Обновим логику tint и selected, чтобы она не зависела от {email} в маршруте
+                    tint = if (currentRoute.startsWith("Profile")) selectedItemTint else unselectedItemTint
                 )
             },
-            selected = currentRoute == "Profile?email={email}",
+            selected = currentRoute.startsWith("Profile"), // Проверяем по префиксу маршрута
             onClick = {
-                navController.navigate("Profile?email={email}") {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                // Убедимся, что ownerEmail не пустой перед навигацией, если это возможно
+                if (ownerEmail.isNotBlank()) {
+                    val encodedEmail =
+                        URLEncoder.encode(ownerEmail, "UTF-8") // Кодируем на всякий случай
+                    navController.navigate("Profile?email=$encodedEmail") { // <--- ИСПРАВЛЕНИЕ ЗДЕСЬ
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    }
+                } else {
+                    // Обработай случай, если ownerEmail пуст (например, показать Toast или не выполнять навигацию)
+                    Log.w("BottomNav", "ownerEmail пуст, не могу перейти в Профиль.")
                 }
             }
         )

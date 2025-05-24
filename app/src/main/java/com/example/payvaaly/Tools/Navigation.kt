@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -18,6 +19,7 @@ import com.example.payvaaly.SecondLayer.MyCards
 import com.example.payvaaly.SecondLayer.PaymentScreen
 import com.example.payvaaly.SecondLayer.TitleScreen
 import com.example.payvaaly.ThirdLayer.ContactScreen
+import com.example.payvaaly.ThirdLayer.ProfileScreen
 
 @Composable
 fun Navigation() {
@@ -96,29 +98,25 @@ fun Navigation() {
                 onBackClicked = { navController.popBackStack() }
             )
         }
-//        composable(
-//            "Profile?email={email}",
-//            arguments = listOf(navArgument("email") {
-//                type = NavType.StringType
-//                defaultValue = ""
-//                nullable = false
-//            })
-//        ) { backStackEntry ->
-//            val email = backStackEntry.arguments?.getString("email") ?: ""
-//            Log.d("BALANCE_DEBUG", "Email = $email")
-//
-//            ProfileScreen(
-//                navController = navController,
-//                email = email,
-//                firstNameInit = firstNameInit,
-//                secondNameInit = secondNameInit,
-//                onSave = { firstName, secondName ->
-//                    // Реализация сохранения, запрос к серверу или локально
-//                    true
-//                },
-//                onBackClicked = { navController.popBackStack() }
-//            )
-//        }
+        composable(
+            "Profile?email={email}",
+            arguments = listOf(navArgument("email") {
+                type = NavType.StringType
+                defaultValue = ""
+            })
+        ) { backStackEntry ->
+            val emailArg = backStackEntry.arguments?.getString("email") ?: ""
+            Log.d("NAV_TO_PROFILE", "ProfileScreen NavHost получил email: '$emailArg'")
+
+            ProfileScreen(
+                navController = navController,
+                email = emailArg,
+                onSave = { currentEmail, newFirstName, newSecondName ->
+                    updateUserProfileOnServer(currentEmail, newFirstName, newSecondName)
+                },
+
+            )
+        }
         composable(
             "contacts?ownerEmail={ownerEmail}",
             arguments = listOf(navArgument("ownerEmail") { defaultValue = "" })

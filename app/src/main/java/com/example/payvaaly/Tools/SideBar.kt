@@ -58,10 +58,10 @@ fun SideBar(navController: NavController, onSignOut: () -> Unit, isDarkTheme: Bo
         SideBarItem(painterResource(id = R.drawable.transactions_icon), "Транзакции",isDarkTheme = isDarkTheme) {
             navController.navigate("Transactions?email=$currentUserEmail")
         }
-        Spacer(modifier = Modifier.height(20.dp))
-        SideBarItem(painterResource(id = R.drawable.cards_icon), "Карты", isDarkTheme = isDarkTheme ){
-            navController.navigate("MyCards")
-        }
+//        Spacer(modifier = Modifier.height(20.dp))
+//        SideBarItem(painterResource(id = R.drawable.cards_icon), "Карты", isDarkTheme = isDarkTheme ){
+//            navController.navigate("MyCards")
+//        }
 
 
 
